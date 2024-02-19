@@ -1,0 +1,191 @@
+{
+	"compiler": {
+		"version": "0.8.18+commit.87f61d96"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "token0_",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "token1_",
+						"type": "address"
+					},
+					{
+						"internalType": "uint160",
+						"name": "sqrtPriceX96",
+						"type": "uint160"
+					},
+					{
+						"internalType": "int24",
+						"name": "tick",
+						"type": "int24"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [],
+				"name": "liquidity",
+				"outputs": [
+					{
+						"internalType": "uint128",
+						"name": "",
+						"type": "uint128"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "",
+						"type": "bytes32"
+					}
+				],
+				"name": "positions",
+				"outputs": [
+					{
+						"internalType": "uint128",
+						"name": "liquidity",
+						"type": "uint128"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "slot0",
+				"outputs": [
+					{
+						"internalType": "uint160",
+						"name": "sqrtPriceX96",
+						"type": "uint160"
+					},
+					{
+						"internalType": "int24",
+						"name": "tick",
+						"type": "int24"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "int24",
+						"name": "",
+						"type": "int24"
+					}
+				],
+				"name": "ticks",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "initialized",
+						"type": "bool"
+					},
+					{
+						"internalType": "uint128",
+						"name": "liquidity",
+						"type": "uint128"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "token0",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "token1",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"src/UniswapV3Pool.sol": "UniswapV3Pool"
+		},
+		"evmVersion": "paris",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": [
+			":ds-test/=lib/forge-std/lib/ds-test/src/",
+			":forge-std/=lib/forge-std/src/"
+		]
+	},
+	"sources": {
+		"src/UniswapV3Pool.sol": {
+			"keccak256": "0xa5dbcb60bd69ea6ca8d92ce424cc8598628cef5a9cd95641fe869a9f0c097230",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://f7bc7b8187c4bc74fd5bb6afa98ce6a69322565a546981e0e21edbb38a76c9b5",
+				"dweb:/ipfs/QmbszdAz6htKxJA8cKcYCZ7xPbaAoPmk1RuJdfXjyRaVbk"
+			]
+		},
+		"src/lib/Position.sol": {
+			"keccak256": "0xdc58be2ffffd8d469af762e9d75d942214b2e1f83d6f47585183fc1ea37cdf76",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://0461c76b3f6e5b434fb90c9d20f813bcdc8bc80079f74ed4452e9218fe1de3ea",
+				"dweb:/ipfs/QmRzDn3HEMkNmDZZUfd4GfHx4WuZmQKFvNnqBW8cLBdjKC"
+			]
+		},
+		"src/lib/Tick.sol": {
+			"keccak256": "0x70084bee91297f289cc6724ad19a25595c347ebd43f8a43e4221f4061ca9a8b7",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://18d8f04ed35355ac0cd4afe06dad3389457320fed85ea0654c7eaa2f46189394",
+				"dweb:/ipfs/QmcKFzxsdAM5rSMZ8u6W4sH8ou3KzcPTzV2rrWujJ8v6GZ"
+			]
+		}
+	},
+	"version": 1
+}
