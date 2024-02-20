@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.14;
 
 library Tick {
@@ -16,9 +16,10 @@ library Tick {
         uint128 liquidityBefore = tickInfo.liquidity;
         uint128 liquidityAfter = liquidityBefore + liquidityDelta;
 
-        if(liquidityBefore==0){
-            tickInfo.initialized=true;
+        if (liquidityBefore == 0) {
+            tickInfo.initialized = true;
         }
+
         tickInfo.liquidity = liquidityAfter;
     }
 }
