@@ -7,14 +7,22 @@ import "./Math.sol";
 library Tick {
     struct Info {
         bool initialized;
-        int128 liquidityNet;
+        // total liquidity at tick
         uint128 liquidityGross;
+        // amount of liqudiity added or subtracted when tick is crossed
+        int128 liquidityNet;
+        // fee growth on the other side of this tick (relative to the current tick)
+        uint256 feeGrowthOutside0X128;
+        uint256 feeGrowthOutside1X128;
     }
 
     function update(
         mapping(int24 => Tick.Info) storage self,
         int24 tick,
+        int24 currentTick,
         int128 liquidityDelta,
+        uint256 feeGrowthGlobal0X128,
+        uint256 feeGrowthGlobal1X128,
         bool upper
     ) internal returns (bool flipped) {
         Tick.Info storage tickInfo = self[tick];
@@ -28,10 +36,17 @@ library Tick {
         flipped = (liquidityAfter == 0) != (liquidityBefore == 0);
 
         if (liquidityBefore == 0) {
+            // by convention, assume that all previous fees were collected below
+            // the tick
+            if (tick <= currentTick) {
+                tickInfo.feeGrowthOutside0X128 = feeGrowthGlobal0X128;
+                tickInfo.feeGrowthOutside1X128 = feeGrowthGlobal1X128;
+            }
+
             tickInfo.initialized = true;
         }
 
-        tickInfo.liquidity = liquidityAfter;
+        tickInfo.liquidityGross = liquidityAfter;
         tickInfo.liquidityNet = upper
             ? int128(int256(tickInfo.liquidityNet) - liquidityDelta)
             : int128(int256(tickInfo.liquidityNet) + liquidityDelta);
@@ -53,7 +68,7 @@ library Tick {
         liquidityDelta = info.liquidityNet;
     }
 
-     function getFeeGrowthInside(
+    function getFeeGrowthInside(
         mapping(int24 => Tick.Info) storage self,
         int24 lowerTick_,
         int24 upperTick_,
