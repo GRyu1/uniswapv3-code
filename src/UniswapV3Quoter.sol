@@ -1,23 +1,100 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.14;
 
 import "./interfaces/IUniswapV3Pool.sol";
+import "./lib/Path.sol";
+import "./lib/PoolAddress.sol";
+import "./lib/TickMath.sol";
 
 contract UniswapV3Quoter {
-    struct QuoteParams {
-        address pool;
+    using Path for bytes;
+
+    struct QuoteSingleParams {
+        address tokenIn;
+        address tokenOut;
+        uint24 tickSpacing;
         uint256 amountIn;
-        bool zeroForOne;
+        uint160 sqrtPriceLimitX96;
     }
 
-    function quote(QuoteParams memory params)
-    public returns(uint256 amountOut, uint160 sqrtPriceX96After, int24 tickAfter) {
+    address public immutable factory;
+
+    constructor(address factory_) {
+        factory = factory_;
+    }
+
+    function quote(
+        QuoteParams memory params
+    )
+        public
+        returns (uint256 amountOut, uint160 sqrtPriceX96After, int24 tickAfter)
+    {
+        sqrtPriceX96AfterList = new uint160[](path.numPools());
+        tickAfterList = new int24[](path.numPools());
+
+        uint256 i = 0;
+
+        while (true) {
+            (address tokenIn, address tokenOut, uint24 tickSpacing) = path
+                .decodeFirstPool();
+
+            (
+                uint256 amountOut_,
+                uint160 sqrtPriceX96After,
+                int24 tickAfter
+            ) = quoteSingle(
+                    QuoteSingleParams({
+                        tokenIn: tokenIn,
+                        tokenOut: tokenOut,
+                        tickSpacing: tickSpacing,
+                        amountIn: amountIn,
+                        sqrtPriceLimitX96: 0
+                    })
+                );
+
+            sqrtPriceX96AfterList[i] = sqrtPriceX96After;
+            tickAfterList[i] = tickAfter;
+            amountIn = amountOut_;
+            i++;
+
+            if (path.hasMultiplePools()) {
+                path = path.skipToken();
+            } else {
+                amountOut = amountIn;
+                break;
+            }
+        }
+    }
+
+    function quoteSingle(QuoteSingleParams memory params)
+        public
+        returns (
+            uint256 amountOut,
+            uint160 sqrtPriceX96After,
+            int24 tickAfter
+        )
+    {
+        IUniswapV3Pool pool = getPool(
+            params.tokenIn,
+            params.tokenOut,
+            params.tickSpacing
+        );
+
+        bool zeroForOne = params.tokenIn < params.tokenOut;
+
         try
-            IUniswapV3Pool(params.pool).swap(
+            pool.swap(
                 address(this),
-                params.zeroForOne,
+                zeroForOne,
                 params.amountIn,
-                abi.encode(params.pool)
+                params.sqrtPriceLimitX96 == 0
+                    ? (
+                        zeroForOne
+                            ? TickMath.MIN_SQRT_RATIO + 1
+                            : TickMath.MAX_SQRT_RATIO - 1
+                    )
+                    : params.sqrtPriceLimitX96,
+                abi.encode(address(pool))
             )
         {} catch (bytes memory reason) {
             return abi.decode(reason, (uint256, uint160, int24));
@@ -27,15 +104,16 @@ contract UniswapV3Quoter {
     function uniswapV3SwapCallback(
         int256 amount0Delta,
         int256 amount1Delta,
-        bytes memory data) external view {
-        address pool = abi.decode(data,(address));
+        bytes memory data
+    ) external view {
+        address pool = abi.decode(data, (address));
 
         uint256 amountOut = amount0Delta > 0
-        ? uint256(-amount1Delta)
-        : uint256(-amount0Delta);
+            ? uint256(-amount1Delta)
+            : uint256(-amount0Delta);
 
-         (uint160 sqrtPriceX96After, int24 tickAfter) = IUniswapV3Pool(pool)
-        .slot0();
+        (uint160 sqrtPriceX96After, int24 tickAfter) = IUniswapV3Pool(pool)
+            .slot0();
 
         assembly {
             let ptr := mload(0x40)
@@ -46,5 +124,16 @@ contract UniswapV3Quoter {
         }
     }
 
-    
+    function getPool(
+        address token0,
+        address token1,
+        uint24 tickSpacing
+    ) internal view returns (IUniswapV3Pool pool) {
+        (token0, token1) = token0 < token1
+            ? (token0, token1)
+            : (token1, token0);
+        pool = IUniswapV3Pool(
+            PoolAddress.computeAddress(factory, token0, token1, tickSpacing)
+        );
+    }
 }

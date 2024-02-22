@@ -1,23 +1,45 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.14;
 
 import "./Math.sol";
 
 library SwapMath {
-    function computeSwapWtep(
+    function computeSwapStep(
         uint160 sqrtPriceCurrentX96,
         uint160 sqrtPriceTargetX96,
         uint128 liquidity,
         uint256 amountRemaining
-    )  internal pure returns (uint160 sqrtPriceNextX96, uint256 amountIn, uint256 amountOut) {
+    )
+        internal
+        pure
+        returns (
+            uint160 sqrtPriceNextX96,
+            uint256 amountIn,
+            uint256 amountOut
+        )
+    {
         bool zeroForOne = sqrtPriceCurrentX96 >= sqrtPriceTargetX96;
 
-        sqrtPriceNextX96 = Math.getNextSqrtPriceFromInput(
-            sqrtPriceCurrentX96,
-            liquidity,
-            amountRemaining,
-            zeroForOne
-        );
+        amountIn = zeroForOne
+            ? Math.calcAmount0Delta(
+                sqrtPriceCurrentX96,
+                sqrtPriceTargetX96,
+                liquidity
+            )
+            : Math.calcAmount1Delta(
+                sqrtPriceCurrentX96,
+                sqrtPriceTargetX96,
+                liquidity
+            );
+
+        if (amountRemaining >= amountIn) sqrtPriceNextX96 = sqrtPriceTargetX96;
+        else
+            sqrtPriceNextX96 = Math.getNextSqrtPriceFromInput(
+                sqrtPriceCurrentX96,
+                liquidity,
+                amountRemaining,
+                zeroForOne
+            );
 
         amountIn = Math.calcAmount0Delta(
             sqrtPriceCurrentX96,
@@ -31,8 +53,7 @@ library SwapMath {
         );
 
         if (!zeroForOne) {
-           (amountIn, amountOut) = (amountOut, amountIn);
+            (amountIn, amountOut) = (amountOut, amountIn);
         }
-
     }
 }

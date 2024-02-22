@@ -30,6 +30,8 @@ library TickBitmap {
         bool lte //for setting Direction
     ) internal view returns (int24 next, bool initialized) {
         int24 compressed = tick / tickSpacing;
+         if (tick < 0 && tick % tickSpacing != 0) compressed--;
+
         if (lte) {
             (int16 wordPos, uint8 bitPos) = position(tick / tickSpacing);
             uint256 mask = (1 << bitPos) - 1 + (1 << bitPos);
